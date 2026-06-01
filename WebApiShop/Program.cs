@@ -8,6 +8,7 @@ using WebApiShop;
 using WebApiShop.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
@@ -20,8 +21,10 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<IRatingRepository, RatingRepository>();
+builder.Services.AddScoped<ICoverService, CoverService>();
+builder.Services.AddHttpClient("OpenAI");
 builder.Services.AddDbContext<ApiDBContext>
-    (options => options.UseSqlServer(builder.Configuration.GetConnectionString("Home")));
+    (options => options.UseSqlServer(builder.Configuration.GetConnectionString("Yael")));
 // Add services to the container.
 builder.Host.UseNLog();
 builder.Services.AddControllers();
@@ -30,7 +33,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAngular",
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200")
+            policy.WithOrigins("http://localhost:4200", "http://localhost:53883")
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
