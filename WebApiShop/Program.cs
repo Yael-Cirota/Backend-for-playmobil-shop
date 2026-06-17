@@ -22,7 +22,14 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IRatingService, RatingService>();
 builder.Services.AddScoped<IRatingRepository, RatingRepository>();
 builder.Services.AddScoped<ICoverService, CoverService>();
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddHttpClient("OpenAI");
+builder.Services.AddHttpClient("AiService", client =>
+{
+    client.BaseAddress = new Uri("http://127.0.0.1:8010/");
+    client.Timeout = TimeSpan.FromSeconds(25);
+});
 builder.Services.AddDbContext<ApiDBContext>
     (options => options.UseSqlServer(builder.Configuration.GetConnectionString("Yael")));
 // Add services to the container.

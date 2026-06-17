@@ -15,6 +15,13 @@ namespace Repositories
         {
             _apiDbContext = apiDbContext;
         }
+        public async Task<List<Product>> GetAllAsync()
+        {
+            return await _apiDbContext.Products
+                .Include(product => product.Category)
+                .ToListAsync();
+        }
+
         public async Task<List<Product>> GetProducts(int position, int skip, int?[] categoryIds,
             string? description,int?maxPrice,int?minPrice)
         {

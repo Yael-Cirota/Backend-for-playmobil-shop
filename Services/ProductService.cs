@@ -21,6 +21,12 @@ namespace Services
             _productRepository = productRepository;
             _mapper = mapper;
         }
+
+        public async Task<List<ProductDTO>> GetAllAsync()
+        {
+            return _mapper.Map<List<Product>, List<ProductDTO>>(await _productRepository.GetAllAsync());
+        }
+
         public async Task<List<ProductDTO>> GetProducts(int position, int skip, int?[] categoryIds,
             string? description, int? maxPrice, int? minPrice)
         {
