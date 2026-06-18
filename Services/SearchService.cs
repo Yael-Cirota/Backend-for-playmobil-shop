@@ -23,13 +23,14 @@ namespace Services
 
             var products = await _products.GetAllAsync();
             var mappedProducts = products
+                .Take(30)
                 .Select(p => new
                 {
-                    Name = p.Name,
-                    Price = p.Price,
-                    Description = p.Description,
-                    Category = p.CategoryName,
-                    InStock = p.IsAvailable
+                    name = p.Name,
+                    price = p.Price,
+                    description = p.Description,
+                    category = p.CategoryName,
+                    inStock = p.IsAvailable
                 })
                 .ToList();
 
@@ -41,7 +42,7 @@ namespace Services
             };
 
             var http = _httpClientFactory.CreateClient();
-            var response = await http.PostAsJsonAsync("http://localhost:8001/search", payload, cancellationToken);
+            var response = await http.PostAsJsonAsync("http://localhost:8010/search", payload, cancellationToken);
 
             if (!response.IsSuccessStatusCode)
             {

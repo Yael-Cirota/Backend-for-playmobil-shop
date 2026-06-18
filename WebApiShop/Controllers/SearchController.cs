@@ -31,6 +31,18 @@ namespace WebApiShop.Controllers
             {
                 return StatusCode(502, ex.Message);
             }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(502, $"Cannot reach search service: {ex.Message}");
+            }
+            catch (TaskCanceledException ex)
+            {
+                return StatusCode(504, $"Search service timed out: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Unexpected search error: {ex.GetType().Name} - {ex.Message}");
+            }
         }
     }
 }
