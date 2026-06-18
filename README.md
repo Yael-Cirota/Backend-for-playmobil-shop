@@ -12,6 +12,8 @@ This backend provides APIs for:
 - Password strength scoring
 - Image upload
 - AI-generated custom box covers
+- Semantic product search (AI embeddings)
+- AI chat assistant responses
 
 The project uses a layered architecture (Controllers -> Services -> Repositories -> EF Core).
 
@@ -49,6 +51,8 @@ High-level request flow:
 - .NET SDK 9.0+
 - SQL Server instance
 - OpenAI API key (for cover generation endpoint)
+- Python 3.11+ (for the local AI service used by semantic search)
+- Python packages for `ai_service` (FastAPI, Uvicorn, OpenAI, NumPy, etc.)
 
 ## Getting Started
 
@@ -59,6 +63,29 @@ dotnet restore
 dotnet build
 dotnet run --project WebApiShop
 ```
+
+### Semantic Search Dependency (Required For `POST api/search`)
+
+The backend `SearchService` calls a local Python service at:
+
+- `http://localhost:8010/search`
+
+Start the Python AI service from `ai_service` before testing `POST api/search`:
+
+```bash
+cd ../ai_service
+python -m uvicorn chat_service:app --reload --port 8010
+```
+
+If you use a virtual environment, activate it first and ensure dependencies are installed.
+
+### Chat Dependency (Required For `POST api/chat`)
+
+The backend `ChatService` calls the same local Python AI service at:
+
+- `http://localhost:8010/chat`
+
+So the same `ai_service` process must be running before testing chat endpoints.
 
 Default development URLs are configured in launch settings:
 
@@ -123,6 +150,44 @@ Main controllers:
 - POST api/passwords/passwordscore
 - POST api/upload/upload
 - POST api/covers/generate
+- POST api/chat
+- POST api/search
+
+## Chat Notes
+
+- `POST api/chat` receives a chat payload with `message`, optional `history`, and optional `products`.
+- Backend forwards this request to the Python AI service (`/chat`).
+- The response contains:
+	- `reply` (assistant text)
+	- `products` (optional recommended product cards)
+
+### Common Error: Chat service unreachable (`localhost:8010`)
+
+If Swagger returns an error for `POST api/chat` indicating the AI service cannot be reached:
+
+1. Verify the Python service is running from `ai_service` on port `8010`.
+2. Verify no other process is occupying port `8010`.
+3. Verify local firewall/antivirus is not blocking Python localhost connections.
+4. Restart both services in this order: Python AI service, then ASP.NET backend.
+
+## Semantic Search Notes
+
+- `POST api/search` receives `{ query: string }`.
+- Backend maps products and forwards them to the Python AI service (`/search`).
+- AI service returns ranked results under `results`.
+
+### Common Error: Cannot reach search service / socket permissions (`localhost:8010`)
+
+If Swagger returns an error like:
+
+- `Cannot reach search service: An attempt was made to access a socket in a way forbidden by its access permissions. (localhost:8010)`
+
+Check:
+
+1. The Python service is actually running and listening on port `8010`.
+2. No other process is blocking port `8010`.
+3. Local firewall/endpoint security is not blocking Python on localhost.
+4. The backend and Python service are both started from the correct folders.
 
 ## Cover Generation Notes
 
